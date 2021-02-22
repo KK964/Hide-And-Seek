@@ -1,0 +1,6 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+main: net.justminecraft.minigames.hideandseek.HideAndSeek
+author: KK964
+depend: [MinigameCore]
