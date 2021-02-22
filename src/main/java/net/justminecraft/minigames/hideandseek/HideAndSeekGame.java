@@ -3,18 +3,23 @@ package net.justminecraft.minigames.hideandseek;
 import net.justminecraft.minigames.minigamecore.Game;
 import net.justminecraft.minigames.minigamecore.Minigame;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class HideAndSeekGame extends Game {
+public class HideAndSeekGame extends Game implements Runnable {
     private final HideAndSeek hideAndSeek;
 
     Scoreboard scoreboard;
+
+    int timeLeft;
 
     ArrayList<Location> spawnLocations = new ArrayList<>();
     ArrayList<Player> hunters = new ArrayList<>();
@@ -38,5 +43,39 @@ public class HideAndSeekGame extends Game {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public boolean isGameOver() {
+        if(players.size() - hunters.size() > 0 && timeLeft > 0) return false;
+        return true;
+    }
+
+    @Override
+    public String getWinningTeamName() {
+        if(players.size() - hunters.size() <= 0) return "Hunters";
+        if(timeLeft <= 0) return "Hiders";
+        return "Unknown";
+    }
+
+    public void updateScore() {
+        scoreboard.resetScores(ChatColor.GREEN + "Alive: " + (players.size() - hunters.size() +1));
+        scoreboard.resetScores(ChatColor.RED + "Hunters: " + (hunters.size() - 1));
+        scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(ChatColor.GREEN + "Alive: " + (players.size() - hunters.size())).setScore(6);
+        scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(ChatColor.RED + "Hunters: " + hunters.size()).setScore(5);
+        if(isGameOver()) {
+            finishGame();
+        }
+    }
+
+    @Override
+    public void run() {
+        scoreboard.resetScores(ChatColor.LIGHT_PURPLE + "Time: " + timeLeft);
+        timeLeft--;
+        scoreboard.getObjective(DisplaySlot.SIDEBAR).getScore(ChatColor.LIGHT_PURPLE + "Time: " + timeLeft).setScore(2);
+        if(isGameOver()) {
+            finishGame();
+        } else
+            HideAndSeek.getPlugin().getServer().getScheduler().runTaskLater(HideAndSeek.getPlugin(), this, 20);
     }
 }
