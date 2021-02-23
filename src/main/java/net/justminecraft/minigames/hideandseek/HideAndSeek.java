@@ -8,11 +8,12 @@ import net.justminecraft.minigames.titleapi.TitleAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Objective;
@@ -20,7 +21,6 @@ import org.bukkit.scoreboard.Team;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class HideAndSeek extends Minigame implements Listener {
 
@@ -31,13 +31,14 @@ public class HideAndSeek extends Minigame implements Listener {
 
     @Override
     public void onEnable() {
-        saveConfig();
+        saveDefaultConfig();
         hideAndSeek = this;
         DATA_FOLDER = getDataFolder();
         SCHEM_FOLDER = new File (DATA_FOLDER.getPath() + System.getProperty("file.separator") + "schematics");
         SCHEM_FOLDER.mkdir();
         MG.core().registerMinigame(this);
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(new MovementEvent(), this);
         getLogger().info(("Hide And Seek Enabled"));
     }
 
@@ -115,8 +116,14 @@ public class HideAndSeek extends Minigame implements Listener {
             p.teleport(playerSpawn);
             spawnLoc.remove(playerSpawn);
             p.setScoreboard(g.scoreboard);
-            if(p != hunter)
+            if(p != hunter) {
+                for(Player p2 : g.players)
+                    p2.hidePlayer(p);
                 hiderObj.addEntry(p.getName());
+                new SetPlayerBlock(p);
+                new SetFallingBlocks(p);
+                new PlayerSolidBlock(p);
+            }
         }
         getServer().getScheduler().runTaskLater(this, () -> {
             g.run();
@@ -128,21 +135,50 @@ public class HideAndSeek extends Minigame implements Listener {
 
     @EventHandler
     public void onDamageEvent(EntityDamageByEntityEvent e) {
-        if(e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
-            Player p = (Player) e.getEntity();
+        if(e.getDamager() instanceof Player) {
             Player damager = (Player) e.getDamager();
-            Game g = MG.core().getGame(p);
+            Game g = MG.core().getGame(damager);
             if(g == null || g.minigame != this) return;
-            HideAndSeekGame game = (HideAndSeekGame) g;
-            if(game.hunters.contains(damager) && !game.hunters.contains(p)) {
-                game.scoreboard.getTeam("hider").removeEntry(p.getName());
-                game.scoreboard.getTeam("hunter").addEntry(p.getName());
-                game.hunters.add(p);
-                game.updateScore();
-                for(Player player : game.players)
-                    player.sendMessage(ChatColor.RED + p.getName() + " was caught by " + damager.getName());
-            }
             e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void playerHitEvent(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        Game g = MG.core().getGame(p);
+        if(g == null || g.minigame != this) return;
+        HideAndSeekGame game = (HideAndSeekGame) g;
+        Location loc = p.getLocation();
+        int range = 8;
+        double yAdd = 1.62;
+        if(p.isSneaking())
+            yAdd = 1.50; //sneaking
+        loc = loc.add(loc.getDirection().getX(),loc.getDirection().getY()+yAdd,loc.getDirection().getZ());
+        for(int i = 0; i < range; i++) { //total distance travel
+            loc = loc.add(loc.getDirection().getX()/1.5, loc.getDirection().getY()/1.5, loc.getDirection().getZ()/1.5);
+            if(loc.getBlock() != null && loc.getBlock().getType().isSolid()) {
+                break;
+            }
+            for(Entity ent : loc.getWorld().getNearbyEntities(loc, 0.2, 0.2, 0.2)) {
+                if(ent != p && ent.getType().isAlive()) {
+                    if(ent instanceof Player) {
+                        Player player = (Player) ent;
+                        if(game.hunters.contains(p) && !game.hunters.contains(player)) {
+                            game.scoreboard.getTeam("hider").removeEntry(player.getName());
+                            game.scoreboard.getTeam("hunter").addEntry(player.getName());
+                            game.hunters.add(player);
+                            game.updateScore();
+                            for(Player p1 : game.players) {
+                                p1.showPlayer(player);
+                                p1.sendMessage(ChatColor.RED + p.getName() + " was caught by " + player.getName());
+                            }
+                        }
+                        i = range;
+                        break;
+                    }
+                }
+            }
         }
     }
 
