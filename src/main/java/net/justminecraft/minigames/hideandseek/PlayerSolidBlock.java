@@ -43,6 +43,7 @@ public class PlayerSolidBlock implements Runnable {
             return;
         }
         player.playSound(player.getLocation(), Sound.LEVEL_UP, 100, 1);
+        player.sendMessage(ChatColor.GREEN + "You are now a solid block!");
         for(Player p : game.players) {
             if(p != player) {
                 p.sendBlockChange(location, material, (byte) 0);

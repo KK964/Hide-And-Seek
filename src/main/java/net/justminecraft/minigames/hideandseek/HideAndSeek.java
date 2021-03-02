@@ -118,14 +118,14 @@ public class HideAndSeek extends Minigame implements Listener {
             p.teleport(playerSpawn);
             spawnLoc.remove(playerSpawn);
             p.setScoreboard(g.scoreboard);
-            //if(p != hunter) {
+            if(p != hunter) {
                 for (Player p2 : g.players)
                     p2.hidePlayer(p);
                 hiderObj.addEntry(p.getName());
                 new SetPlayerBlock(p);
                 new SetFallingBlocks(p);
                 new PlayerSolidBlock(p);
-            //}
+            }
         }
         getServer().getScheduler().runTaskLater(this, () -> {
             g.run();

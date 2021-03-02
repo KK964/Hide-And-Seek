@@ -2,6 +2,7 @@ package net.justminecraft.minigames.hideandseek;
 
 import net.justminecraft.minigames.minigamecore.Game;
 import net.justminecraft.minigames.minigamecore.MG;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -22,9 +23,11 @@ public class SetPlayerBlock {
     private void set() {
         Game g = MG.core().getGame(player);
         HideAndSeekGame game = (HideAndSeekGame) g;
-        game.playerBlocks.put(player, getBlock());
+        Material m = getBlock();
+        game.playerBlocks.put(player, m);
         game.solidBlock.put(player, false);
         game.solidTime.put(player, 0);
+        player.sendMessage(ChatColor.GREEN + "You are \"" + m.toString() + "\"!");
     }
 
     private Material getBlock() {
