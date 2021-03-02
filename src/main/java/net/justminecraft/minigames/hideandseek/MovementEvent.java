@@ -4,9 +4,12 @@ import net.justminecraft.minigames.minigamecore.Game;
 import net.justminecraft.minigames.minigamecore.MG;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class MovementEvent implements Listener {
@@ -27,6 +30,15 @@ public class MovementEvent implements Listener {
                     game.solidBlock.replace(player, false);
                 }
             }
+        }
+    }
+    @EventHandler
+    public void onForm(EntityChangeBlockEvent event) {
+        if(event.getEntity().getType() == EntityType.FALLING_BLOCK) {
+            Entity en = event.getEntity();
+            Game g = MG.core().getGame(en.getWorld());
+            if(g == null || g.minigame != HideAndSeek.getPlugin()) return;
+            event.setCancelled(true);
         }
     }
 }

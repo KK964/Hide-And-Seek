@@ -21,6 +21,7 @@ import org.bukkit.scoreboard.Team;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class HideAndSeek extends Minigame implements Listener {
 
@@ -71,8 +72,9 @@ public class HideAndSeek extends Minigame implements Listener {
 
     @Override
     public void startGame(Game game) {
+        Random rand = new Random();
         HideAndSeekGame g = (HideAndSeekGame) game;
-        Player hunter = g.players.get((int) Math.random() * g.players.size());
+        Player hunter = g.players.get(rand.nextInt(g.players.size()));
         g.hunters.add(hunter);
         int waitTime = 30 + (g.players.size() * 10);
         new FreezePlayer(hunter, waitTime);
@@ -111,19 +113,19 @@ public class HideAndSeek extends Minigame implements Listener {
         ArrayList<Location> spawnLoc = new ArrayList<>(g.spawnLocations);
 
         for(Player p : g.players) {
-            Location playerSpawn = spawnLoc.get((int) Math.random() * spawnLoc.size());
+            Location playerSpawn = spawnLoc.get(rand.nextInt(spawnLoc.size()));
             playerSpawn.setWorld(g.world);
             p.teleport(playerSpawn);
             spawnLoc.remove(playerSpawn);
             p.setScoreboard(g.scoreboard);
-            if(p != hunter) {
-                for(Player p2 : g.players)
+            //if(p != hunter) {
+                for (Player p2 : g.players)
                     p2.hidePlayer(p);
                 hiderObj.addEntry(p.getName());
                 new SetPlayerBlock(p);
                 new SetFallingBlocks(p);
                 new PlayerSolidBlock(p);
-            }
+            //}
         }
         getServer().getScheduler().runTaskLater(this, () -> {
             g.run();
@@ -131,16 +133,6 @@ public class HideAndSeek extends Minigame implements Listener {
                 if(p != hunter)
                     TitleAPI.sendTitle(p, 0, 30, 20, ChatColor.DARK_RED + "WARNING", ChatColor.DARK_RED + "The Hunter Has Been Released!");
             }, waitTime * 20);
-    }
-
-    @EventHandler
-    public void onDamageEvent(EntityDamageByEntityEvent e) {
-        if(e.getDamager() instanceof Player) {
-            Player damager = (Player) e.getDamager();
-            Game g = MG.core().getGame(damager);
-            if(g == null || g.minigame != this) return;
-            e.setCancelled(true);
-        }
     }
 
     @EventHandler

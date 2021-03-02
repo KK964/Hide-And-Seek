@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class HideAndSeekGame extends Game implements Runnable {
     private final HideAndSeek hideAndSeek;
@@ -29,7 +30,6 @@ public class HideAndSeekGame extends Game implements Runnable {
     HashMap<Player, Material> playerBlocks = new HashMap<>();
     HashMap<Player, Boolean> solidBlock = new HashMap<>();
     HashMap<Player, Integer> solidTime = new HashMap<>();
-    HashMap<Player, Entity> falling = new HashMap<>();
 
     public HideAndSeekGame(Minigame mg) {
         super(mg, false);
@@ -45,7 +45,8 @@ public class HideAndSeekGame extends Game implements Runnable {
                     maps.add(file.getName());
             }
             if(maps.size() == 0) new IOException("Schematic File is missing, please add maps.");
-            return maps.get((int) Math.random() * maps.size());
+            Random rand = new Random();
+            return maps.get(rand.nextInt(maps.size()));
         } catch (Exception e) {
             e.printStackTrace();
         }

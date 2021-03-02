@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SetPlayerBlock {
     private final Player player;
@@ -28,7 +29,8 @@ public class SetPlayerBlock {
 
     private Material getBlock() {
         List blocks = new ArrayList(plugin.getConfig().getStringList("materials"));
-        Material block = Material.valueOf((String) blocks.get((int) Math.random() * blocks.size()));
+        Random rand = new Random();
+        Material block = Material.valueOf((String) blocks.get(rand.nextInt(blocks.size())));
         return block;
     }
 }
