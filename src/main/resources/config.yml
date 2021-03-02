@@ -1,2 +1,2 @@
-# blocks players can b
-materials: []
+# blocks players can be
+materials: [WORKBENCH, CHEST, FURNACE, FLOWER_POT, MELON, PUMPKIN, HAY_BLOCK]
