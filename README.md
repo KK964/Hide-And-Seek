@@ -2,7 +2,7 @@ Contributing
 ==========
 Download the source code with
 
-    $ git clone https://github.com/KK964/JustGuns.git
+    $ git clone https://github.com/KK964/Hide-And-Seek.git
 
 A folder will be created called `HideNSeek` with the source code inside. You
 can open this folder with your favourite IDE (eg Eclipse or IntelliJ) and begin
